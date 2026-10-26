@@ -23,6 +23,36 @@
     p { margin: 8px 0; }
     .subtitle, .muted { color: var(--muted); }
     .fox { font-size: 76px; line-height: 1.4; filter: drop-shadow(0 0 14px #9b704044); }
+    .evolution-fox-wrap { display: flex; justify-content: center; padding: 8px 0 0; }
+    .evolution-fox { width: min(100%, 330px); height: auto; overflow: visible; filter: drop-shadow(0 8px 12px #0005); animation: fox-breathe 3.2s ease-in-out infinite; }
+    .fox-tail { transform-box: fill-box; transform-origin: 18% 82%; animation: tail-swish 2.4s ease-in-out infinite; }
+    .fox-ear { transform-box: fill-box; transform-origin: center bottom; animation: ear-twitch 5s ease-in-out infinite; }
+    .fox-aura { opacity: 0; transition: opacity .5s; }
+    .evolution-fox.stage-6 .fox-aura, .evolution-fox.stage-7 .fox-aura, .evolution-fox.stage-8 .fox-aura, .evolution-fox.stage-9 .fox-aura, .evolution-fox.stage-10 .fox-aura { opacity: .75; animation: aura-pulse 3s ease-in-out infinite; }
+    .fox-leaf-crown { opacity: 0; transition: opacity .5s; }
+    .evolution-fox.stage-9 .fox-leaf-crown, .evolution-fox.stage-10 .fox-leaf-crown { opacity: 1; }
+    .evolution-fox.stage-1 { transform: scale(1.02); }
+    .evolution-fox.stage-2 { transform: scale(1.01); }
+    .evolution-fox.stage-3 { transform: scale(1); }
+    .evolution-fox.stage-4 { transform: scale(.99); }
+    .evolution-fox.stage-5 { transform: scale(.98); }
+    .evolution-fox.stage-6 { transform: scale(.97); }
+    .evolution-fox.stage-7 { transform: scale(.96); }
+    .evolution-fox.stage-8 { transform: scale(.95); }
+    .evolution-fox.stage-9 { transform: scale(.94); }
+    .evolution-fox.stage-10 { transform: scale(.93); }
+    @keyframes fox-breathe { 0%,100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+    @keyframes tail-swish { 0%,100% { rotate: -4deg; } 50% { rotate: 7deg; } }
+    @keyframes ear-twitch { 0%,88%,100% { rotate: 0deg; } 91% { rotate: -8deg; } 94% { rotate: 4deg; } }
+    @keyframes aura-pulse { 0%,100% { opacity: .45; } 50% { opacity: .9; } }
+    .evolution-stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 12px 0; }
+    .evolution-stat { background: var(--panel2); border-radius: 12px; padding: 12px; text-align: center; }
+    .evolution-stat strong { display: block; color: var(--gold); font-size: 1.25rem; }
+    .stage-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 14px; }
+    .stage-chip { border: 1px solid var(--border); border-radius: 10px; padding: 9px; color: var(--muted); font-size: .9rem; }
+    .stage-chip.active { border-color: var(--gold); color: var(--cream); background: #d6b98712; }
+    .stage-chip.unlocked { color: var(--green); }
+    @media (prefers-reduced-motion: reduce) { .evolution-fox, .fox-tail, .fox-ear, .fox-aura { animation: none !important; transition: none !important; } }
     .card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 20px; margin: 16px 0; }
     .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
     .stat { background: var(--panel2); border-radius: 12px; padding: 13px 6px; text-align: center; overflow-wrap: anywhere; }
@@ -76,6 +106,50 @@
     </div>
     <p id="levelProgressText" class="muted"></p>
     <div class="progress-track"><div id="levelProgress" style="height:100%;width:0%;background:var(--gold)"></div></div>
+  </section>
+
+  <section class="card" id="evolutionCard">
+    <h2>🦊 Your evolving forest companion</h2>
+    <p class="muted">Your fox changes when your weight entries reach new milestones. It never evolves backward, and there's no deadline.</p>
+    <div class="evolution-fox-wrap">
+      <svg id="evolutionFox" class="evolution-fox stage-1" viewBox="0 0 300 190" role="img" aria-label="Your animated fox companion">
+        <defs>
+          <linearGradient id="foxOrange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffbd65"/><stop offset=".55" stop-color="#e97932"/><stop offset="1" stop-color="#b84c25"/></linearGradient>
+          <linearGradient id="foxCream" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0d0"/><stop offset="1" stop-color="#e7c8a0"/></linearGradient>
+          <radialGradient id="foxGlow"><stop offset="0" stop-color="#c5f28b" stop-opacity=".55"/><stop offset="1" stop-color="#c5f28b" stop-opacity="0"/></radialGradient>
+        </defs>
+        <ellipse class="fox-aura" cx="150" cy="100" rx="125" ry="82" fill="url(#foxGlow)"/>
+        <ellipse cx="150" cy="166" rx="83" ry="10" fill="#07100d" opacity=".45"/>
+        <g class="fox-tail"><path d="M92 127 C49 133 34 105 48 78 C54 65 69 63 81 74 C59 80 65 103 92 105 Z" fill="url(#foxOrange)"/><path d="M49 79 C56 68 69 67 80 75 C66 78 65 89 68 95 C54 94 48 87 49 79Z" fill="#fff0d0"/></g>
+        <g id="foxBodyGroup">
+          <ellipse id="foxBody" cx="147" cy="126" rx="58" ry="37" fill="url(#foxOrange)"/>
+          <ellipse id="foxChest" cx="174" cy="135" rx="24" ry="28" fill="url(#foxCream)"/>
+          <ellipse id="foxBelly" cx="143" cy="148" rx="39" ry="12" fill="#f9d7a9" opacity=".65"/>
+          <path id="foxLegs" d="M107 139 Q103 153 108 160 L126 160 Q130 155 126 143 M151 145 Q148 154 152 160 L171 160 Q175 155 170 141" fill="#c45a2a" stroke="#a94825" stroke-width="1.5"/>
+        </g>
+        <g id="foxHeadGroup">
+          <path class="fox-ear" d="M104 74 L105 34 L132 61 Z" fill="#d9672e"/><path d="M111 58 L111 43 L124 59 Z" fill="#f6b3a0"/>
+          <path class="fox-ear" d="M146 60 L166 31 L173 73 Z" fill="#d9672e"/><path d="M154 58 L165 42 L166 63 Z" fill="#f6b3a0"/>
+          <circle id="foxHead" cx="137" cy="78" r="37" fill="url(#foxOrange)"/>
+          <path d="M108 83 Q111 108 137 111 Q163 108 166 83 Q153 91 137 91 Q121 91 108 83Z" fill="url(#foxCream)"/>
+          <ellipse cx="124" cy="78" rx="3.5" ry="5" fill="#29251f"/><ellipse cx="150" cy="78" rx="3.5" ry="5" fill="#29251f"/>
+          <circle cx="125" cy="76" r="1.2" fill="white"/><circle cx="151" cy="76" r="1.2" fill="white"/>
+          <path d="M132 91 Q137 95 142 91 Q138 99 132 91Z" fill="#57372d"/><path d="M137 98 Q133 102 129 99 M137 98 Q141 102 145 99" fill="none" stroke="#8c523a" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <g class="fox-leaf-crown"><path d="M126 45 Q113 27 122 19 Q138 26 126 45Z" fill="#9ac77a"/><path d="M131 43 Q133 23 149 23 Q151 39 131 43Z" fill="#6c9e64"/><path d="M126 43 L125 28 M132 41 L144 28" stroke="#d9e9a7" stroke-width="1.5"/></g>
+        <g id="foxSparkles" fill="#f3d99a" opacity="0"><path d="M218 57 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4Z"/><path d="M79 55 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z"/></g>
+      </svg>
+    </div>
+    <h3 id="foxStageName" style="text-align:center;margin-bottom:4px">Stage 1 — Little Chonker</h3>
+    <p id="foxStageMessage" style="text-align:center">Your fluffy starting buddy is here with you.</p>
+    <div class="evolution-stats">
+      <div class="evolution-stat"><strong id="foxLowestWeight">224 lb</strong>Lowest logged weight</div>
+      <div class="evolution-stat"><strong id="foxNextMilestone">216 lb</strong>Next evolution</div>
+    </div>
+    <div class="progress-track"><div id="foxProgress" style="height:100%;width:0%;background:var(--gold);transition:width .4s"></div></div>
+    <p id="foxProgressText" class="notice" style="text-align:center">Your first evolution is waiting whenever you're ready.</p>
+    <h3>Evolution trail</h3>
+    <div id="foxStageList" class="stage-list"></div>
   </section>
 
   <section class="card">
@@ -289,6 +363,65 @@
     });
     addText(root, "p", "Your rewards are for consistency, not for eating less or ignoring hunger.", "notice");
   }
+  const foxStages = [
+    { weight: 224, name: "Little Chonker", message: "Your fluffy starting buddy is here with you. Big hugs, tiny steps.", bodyRx: 58, bodyRy: 37, headR: 37 },
+    { weight: 216, name: "Cozy Cub", message: "Your curious cub is beginning to explore the woodland.", bodyRx: 56, bodyRy: 35, headR: 36 },
+    { weight: 208, name: "Wiggly Wanderer", message: "Your fox is getting bouncier and chasing fireflies.", bodyRx: 54, bodyRy: 34, headR: 35 },
+    { weight: 200, name: "Fernfoot", message: "A confident little explorer with a spring in their step.", bodyRx: 52, bodyRy: 32, headR: 34 },
+    { weight: 192, name: "Trailblazer", message: "Your fox is finding new paths and learning new tricks.", bodyRx: 50, bodyRy: 31, headR: 33 },
+    { weight: 184, name: "Foxfire Scout", message: "A magical glow appears as your fox discovers its forest magic.", bodyRx: 48, bodyRy: 30, headR: 32 },
+    { weight: 176, name: "Moonrunner", message: "Graceful paws, a swishing tail, and moonlit adventures await.", bodyRx: 46, bodyRy: 29, headR: 31 },
+    { weight: 168, name: "Grove Guardian", message: "Your agile guardian watches over the enchanted grove.", bodyRx: 44, bodyRy: 28, headR: 30 },
+    { weight: 160, name: "Moonlit Spirit", message: "A rare woodland spirit form, crowned with tiny leaves.", bodyRx: 42, bodyRy: 27, headR: 29 },
+    { weight: 150, name: "Eternal Foxfire", message: "Your legendary fox shines with the magic of your long journey.", bodyRx: 40, bodyRy: 26, headR: 28 }
+  ];
+  function weightInPounds(entry) { return Number(entry.value) * (entry.unit === "kg" ? 2.2046226218 : 1); }
+  function currentFoxStage() {
+    const logged = data.weights.map(weightInPounds).filter(value => Number.isFinite(value) && value > 0);
+    const lowest = logged.length ? Math.min(...logged) : 224;
+    let reached = 0;
+    foxStages.forEach((stage, index) => { if (lowest <= stage.weight) reached = index; });
+    // Keep the highest form ever unlocked, even if weight fluctuates or an entry is deleted.
+    const savedStage = Number.isInteger(data.foxEvolutionStage) ? data.foxEvolutionStage : 0;
+    const stageIndex = Math.max(0, Math.min(9, savedStage, 9), reached);
+    if (stageIndex > savedStage) { data.foxEvolutionStage = stageIndex; saveData(); }
+    return { stageIndex, lowest };
+  }
+  function renderFoxEvolution() {
+    const { stageIndex, lowest } = currentFoxStage();
+    const stage = foxStages[stageIndex];
+    const fox = el("evolutionFox");
+    fox.setAttribute("class", "evolution-fox stage-" + (stageIndex + 1));
+    el("foxStageName").textContent = "Stage " + (stageIndex + 1) + " — " + stage.name;
+    el("foxStageMessage").textContent = stage.message;
+    el("foxLowestWeight").textContent = lowest.toFixed(1).replace(/\.0$/, "") + " lb";
+    el("foxBody").setAttribute("rx", stage.bodyRx);
+    el("foxBody").setAttribute("ry", stage.bodyRy);
+    el("foxChest").setAttribute("rx", Math.max(17, stage.bodyRx * .41));
+    el("foxChest").setAttribute("ry", Math.max(21, stage.bodyRy * .76));
+    el("foxBelly").setAttribute("rx", Math.max(25, stage.bodyRx * .67));
+    el("foxHead").setAttribute("r", stage.headR);
+    el("foxSparkles").setAttribute("opacity", stageIndex >= 5 ? "1" : "0");
+    const next = foxStages[stageIndex + 1];
+    const progress = el("foxProgress");
+    if (!next) {
+      el("foxNextMilestone").textContent = "Goal reached!";
+      progress.style.width = "100%";
+      el("foxProgressText").textContent = "All 10 forms unlocked. Your fox is celebrating with you! Remember, your wellbeing matters at every weight.";
+    } else {
+      el("foxNextMilestone").textContent = next.weight + " lb";
+      const start = stage.weight, end = next.weight;
+      const portion = Math.max(0, Math.min(1, (start - lowest) / (start - end)));
+      progress.style.width = (portion * 100) + "%";
+      el("foxProgressText").textContent = "Next: " + next.name + " at " + next.weight + " lb. This is a milestone, not a deadline.";
+    }
+    const list = el("foxStageList"); list.replaceChildren();
+    foxStages.forEach((item, index) => {
+      const chip = addText(list, "div", "", "stage-chip" + (index === stageIndex ? " active" : "") + (index < stageIndex ? " unlocked" : ""));
+      addText(chip, "strong", (index < stageIndex ? "✓ " : index === stageIndex ? "🦊 " : "🔒 ") + (index + 1) + ". " + item.name);
+      addText(chip, "div", item.weight + " lb");
+    });
+  }
   function renderWeights() {
     const root = el("weightList"); root.replaceChildren();
     const entries = data.weights.slice().sort((a, b) => b.date.localeCompare(a.date));
@@ -300,7 +433,7 @@
       remove.addEventListener("click", () => {
         if (!confirm("Delete this weight entry?")) return;
         data.weights = data.weights.filter(w => w.id !== entry.id);
-        saveData(); renderWeights();
+        saveData(); renderWeights(); renderFoxEvolution();
       });
     });
     if (entries.length >= 2) {
@@ -330,7 +463,7 @@
       back.addEventListener("click", () => { dateKey = todayKey(); renderAll(); });
     }
   }
-  function renderAll() { renderHeader(); renderQuests(); renderMeals(); renderCheckin(); renderRewards(); renderWeights(); renderHistory(); }
+  function renderAll() { renderHeader(); renderQuests(); renderMeals(); renderCheckin(); renderRewards(); renderWeights(); renderFoxEvolution(); renderHistory(); }
   for (let i = 0; i < habitCount; i++) {
     el("q" + i).addEventListener("change", () => {
       getDay().habits[i] = el("q" + i).checked;
@@ -361,7 +494,7 @@
     event.preventDefault(); const value = Number(el("weight").value);
     if (!Number.isFinite(value) || value <= 0 || value > 1500) { el("dataMessage").textContent = "Please enter a valid weight."; return; }
     data.weights.push({ id: Date.now().toString() + Math.random().toString(16).slice(2), date: todayKey(), value, unit: el("weightUnit").value });
-    saveData(); el("weight").value = ""; el("dataMessage").textContent = "Weight entry saved."; renderWeights();
+    saveData(); el("weight").value = ""; el("dataMessage").textContent = "Weight entry saved. Your fox's evolution has been checked!"; renderWeights(); renderFoxEvolution();
   });
   el("exportData").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -371,7 +504,7 @@
   });
   el("clearData").addEventListener("click", () => {
     if (!confirm("This permanently erases all Foxglove journal entries, habits, XP, and weight data saved by this app in this browser. Export a backup first if you want to keep it. Continue?")) return;
-    data = { days: {}, weights: [] }; dateKey = todayKey(); saveData();
+    data = { days: {}, weights: [], foxEvolutionStage: 0 }; dateKey = todayKey(); saveData();
     el("dataMessage").textContent = "Your Foxglove data has been cleared."; renderAll();
   });
   renderAll();

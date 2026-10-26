@@ -25,7 +25,9 @@
     .fox { font-size: 76px; line-height: 1.4; filter: drop-shadow(0 0 14px #9b704044); }
     .evolution-fox-wrap { display: flex; justify-content: center; padding: 8px 0 0; }
     .companion-customizer { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .evolution-critter { display:none; font-size:112px; line-height:1.2; text-align:center; padding:10px 0; animation: fox-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 12px #0005); }
+    .evolution-critter { display:none; font-size:112px; line-height:1.2; text-align:center; padding:10px 0; animation: fox-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 12px #0005); transition: font-size .5s ease, filter .4s ease; }
+    .evolution-critter.stage-6, .evolution-critter.stage-7, .evolution-critter.stage-8, .evolution-critter.stage-9, .evolution-critter.stage-10 { text-shadow: 0 0 16px #b7d98a99, 0 0 32px #b7d98a55; }
+    .evolution-critter.stage-9, .evolution-critter.stage-10 { text-shadow: 0 0 18px #d6b987cc, 0 0 36px #b7d98a88; }
     .evolution-critter-accessory { display:inline-block; font-size:38px; vertical-align:top; margin-left:-22px; }
     .companion-preview { min-height: 150px; display:flex; justify-content:center; align-items:center; position:relative; margin: 8px auto 14px; width: 190px; border-radius: 50%; background: radial-gradient(circle, #78916a33, transparent 70%); }
     .companion-avatar { font-size: 100px; line-height: 1.2; display:none; animation: fox-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 8px #0005); }
@@ -489,7 +491,7 @@
       button.setAttribute("aria-pressed", item.id === critter.id ? "true" : "false");
       const emoji = addText(button, "span", item.emoji, "critter-emoji");
       addText(button, "span", item.name, "critter-name");
-      button.addEventListener("click", () => { data.companionCritter = item.id; saveData(); renderCustomizer(); });
+      button.addEventListener("click", () => { data.companionCritter = item.id; saveData(); renderFoxEvolution(); });
       grid.appendChild(button);
     });
     el("companionName").value = data.companionName || "";
@@ -511,9 +513,13 @@
     svg.style.display = critter.id === "fox" ? "block" : "none";
     alternate.style.display = critter.id === "fox" ? "none" : "block";
     alternate.firstChild.textContent = critter.emoji;
+    alternate.className = "evolution-critter stage-" + (stageIndex + 1);
+    alternate.setAttribute("aria-label", name + " the evolving " + critter.name.toLowerCase() + ", stage " + (stageIndex + 1));
     el("evolutionCritterAccessory").textContent = accessory === "none" ? "" : accessory;
+    el("evolutionCritterAccessory").style.filter = colorFilters[color] || "none";
     alternate.style.filter = colorFilters[color] || "none";
-    alternate.style.transform = "scale(" + (1.02 - stageIndex * .01) + ")";
+    alternate.style.fontSize = (112 - stageIndex * 4) + "px";
+    alternate.style.transform = "scale(" + (1.04 - stageIndex * .012) + ")";
     svg.style.filter = "drop-shadow(0 8px 12px #0005) " + (colorFilters[color] || "none");
     el("companionPreview").style.filter = colorFilters[color] || "none";
   }
@@ -656,6 +662,13 @@
     const selectedPet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
     el("punkContext").textContent = item.context.replace(/the fox/gi, "your " + selectedPet.name.toLowerCase()).replace(/a fox/gi, "a " + selectedPet.name.toLowerCase());
   }
+  function companionNotificationIcon(critter, accessory, color) {
+    const bg = ({ purple: "#8f78b7", pink: "#d889b6", blue: "#729bc9", green: "#78916a", gold: "#c9a45f", mono: "#343434", none: "#263a2e" })[color] || "#263a2e";
+    const safeEmoji = String(critter.emoji || "🦊").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeAccessory = accessory && accessory !== "none" ? String(accessory).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect x="3" y="3" width="122" height="122" rx="30" fill="${bg}"/><circle cx="64" cy="64" r="49" fill="#f5eddc"/><text x="64" y="82" text-anchor="middle" font-size="58">${safeEmoji}</text><text x="99" y="34" text-anchor="middle" font-size="25">${safeAccessory}</text></svg>`;
+    return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+  }
   async function sendPunkNotification(askPermission) {
     if (!("Notification" in window)) {
       el("notificationStatus").textContent = "This browser does not support notifications here, but your pep talks still work in Foxglove.";
@@ -674,11 +687,11 @@
         const registration = await navigator.serviceWorker.ready;
         const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
         const petName = (data.companionName || "Your companion").trim();
-        await registration.showNotification(petName + " the " + pet.name + " says… " + pet.emoji + "⚡", { body: item.quote, icon: "./foxglove.svg", tag: "foxglove-companion", renotify: false });
+        await registration.showNotification(petName + " the " + pet.name + " says… " + pet.emoji + "⚡", { body: item.quote, icon: companionNotificationIcon(pet, data.companionAccessory || "🖤", data.companionColor || "none"), tag: "foxglove-companion", renotify: false });
       } else {
         const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
         const petName = (data.companionName || "Your companion").trim();
-        new Notification(petName + " the " + pet.name + " says… " + pet.emoji + "⚡", { body: item.quote, icon: "./foxglove.svg" });
+        new Notification(petName + " the " + pet.name + " says… " + pet.emoji + "⚡", { body: item.quote, icon: companionNotificationIcon(pet, data.companionAccessory || "🖤", data.companionColor || "none") });
       }
       const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
       el("notificationStatus").textContent = pet.name + " notification sent. Go cause some manageable chaos. ⚡";

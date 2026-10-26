@@ -1,4 +1,4 @@
-const CACHE_NAME = "foxglove-offline-v5";
+const CACHE_NAME = "foxglove-offline-v6";
 const APP_FILES = ["./", "./index.html", "./manifest.json", "./foxglove.svg"];
 
 self.addEventListener("install", event => {

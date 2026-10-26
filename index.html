@@ -25,6 +25,8 @@
     .fox { font-size: 76px; line-height: 1.4; filter: drop-shadow(0 0 14px #9b704044); }
     .evolution-fox-wrap { display: flex; justify-content: center; padding: 8px 0 0; }
     .companion-customizer { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .evolution-critter { display:none; font-size:112px; line-height:1.2; text-align:center; padding:10px 0; animation: fox-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 12px #0005); }
+    .evolution-critter-accessory { display:inline-block; font-size:38px; vertical-align:top; margin-left:-22px; }
     .companion-preview { min-height: 150px; display:flex; justify-content:center; align-items:center; position:relative; margin: 8px auto 14px; width: 190px; border-radius: 50%; background: radial-gradient(circle, #78916a33, transparent 70%); }
     .companion-avatar { font-size: 100px; line-height: 1.2; display:none; animation: fox-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 8px #0005); }
     .companion-accessory { position:absolute; top: 4px; right: 28px; font-size: 35px; filter: drop-shadow(0 3px 3px #0008); }
@@ -104,7 +106,7 @@
 <body>
 <div class="app">
   <header>
-    <div class="fox" aria-label="Fox">🦊</div>
+    <div class="fox" id="headerCompanionEmoji" aria-label="Selected companion">🦊</div>
     <h1>Foxglove</h1>
     <p class="subtitle">Your little companion in the forest.</p>
     <p><em>Small steps. Steady progress.</em></p>
@@ -132,16 +134,17 @@
     <p id="punkContext" class="muted">One step at a time. No shame. No surrender.</p>
     <div class="row">
       <button type="button" id="newPunkQuote">Give me another pep talk</button>
-      <button type="button" id="sendPunkNotification" class="secondary">Send a fox notification</button>
+      <button type="button" id="sendPunkNotification" class="secondary">Send a companion notification</button>
     </div>
-    <label class="quest" style="border:0;padding-left:0"><input id="dailyPunkNotification" type="checkbox"><span>Show me one punk-fox notification per day when I open Foxglove (requires notification permission).</span></label>
+    <label class="quest" style="border:0;padding-left:0"><input id="dailyPunkNotification" type="checkbox"><span>Show me one companion notification per day when I open Foxglove (requires notification permission).</span></label>
     <p id="notificationStatus" class="notice" aria-live="polite">Notifications are optional. You can still get pep talks right here.</p>
   </section>
 
   <section class="card" id="evolutionCard">
-    <h2>🦊 Your evolving forest companion</h2>
-    <p class="muted">Your fox changes when your weight entries reach new milestones. It never evolves backward, and there's no deadline.</p>
+    <h2 id="evolutionHeading">🦊 Your evolving forest companion</h2>
+    <p class="muted" id="evolutionDescription">Your companion changes when your weight entries reach new milestones. It never evolves backward, and there's no deadline.</p>
     <div class="evolution-fox-wrap">
+      <div id="evolutionCritter" class="evolution-critter" role="img" aria-label="Your evolving companion">🦊<span id="evolutionCritterAccessory" class="evolution-critter-accessory"></span></div>
       <svg id="evolutionFox" class="evolution-fox stage-1" viewBox="0 0 300 190" role="img" aria-label="Your animated fox companion">
         <defs>
           <linearGradient id="foxOrange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffbd65"/><stop offset=".55" stop-color="#e97932"/><stop offset="1" stop-color="#b84c25"/></linearGradient>
@@ -196,7 +199,7 @@
         <div><label for="companionAccessory">Accessory</label><select id="companionAccessory"><option value="none">No accessory</option><option value="🖤">Punk heart 🖤</option><option value="🎀">Bow 🎀</option><option value="🌿">Leaf crown 🌿</option><option value="🌸">Flower crown 🌸</option><option value="🕶️">Cool shades 🕶️</option><option value="⭐">Star ⭐</option><option value="🦇">Bat buddy 🦇</option><option value="👑">Tiny crown 👑</option><option value="🎧">Headphones 🎧</option><option value="🧣">Scarf 🧣</option></select></div>
         <div><label for="companionColor">Color vibe</label><select id="companionColor"><option value="none">Natural colors</option><option value="purple">Mystic purple</option><option value="pink">Bubblegum pink</option><option value="blue">Moonlit blue</option><option value="green">Forest green</option><option value="gold">Golden glow</option><option value="mono">Black & white punk</option></select></div>
       </div>
-      <p class="notice">Critters: fox, cat, wolf, raccoon, bunny, bear, deer, owl, frog, axolotl, hedgehog, dragon, bat, crow, capybara, otter, possum, moth, turtle, and red panda.</p>
+      <p class="notice">Choose any critter above. Your choice updates the companion display throughout Foxglove.</p>
     </div>
   </section>
 
@@ -227,7 +230,7 @@
       <option value="restrict">I've been trying not to eat sweets</option>
     </select>
     <button id="cravingButton">Help me choose my next step</button>
-    <div id="cravingAnswer" class="entry" aria-live="polite">Your fox is here whenever you need a moment.</div>
+    <div id="cravingAnswer" class="entry" aria-live="polite">Your companion is here whenever you need a moment.</div>
   </section>
 
   <section class="card">
@@ -495,11 +498,22 @@
     el("companionAvatar").textContent = critter.emoji;
     el("companionAvatar").style.display = "block";
     el("companionAvatar").style.filter = colorFilters[color] || "none";
-    el("companionAvatar").style.transform = "scale(" + (1 + (currentFoxStage().stageIndex * .012)) + ")";
+    const stageIndex = currentFoxStage().stageIndex;
+    el("companionAvatar").style.transform = "scale(" + (1 + (stageIndex * .012)) + ")";
     el("companionAccessoryPreview").textContent = accessory === "none" ? "" : accessory;
     el("companionGreeting").textContent = name + " the " + critter.name + " is ready to cause some wholesome chaos.";
+    el("headerCompanionEmoji").textContent = critter.emoji;
+    el("headerCompanionEmoji").setAttribute("aria-label", name + " the " + critter.name);
+    el("evolutionHeading").textContent = critter.emoji + " Your evolving " + critter.name.toLowerCase() + " companion";
+    el("evolutionDescription").textContent = "Your " + critter.name.toLowerCase() + " changes when your weight entries reach new milestones. It never evolves backward, and there's no deadline.";
     const svg = el("evolutionFox");
+    const alternate = el("evolutionCritter");
     svg.style.display = critter.id === "fox" ? "block" : "none";
+    alternate.style.display = critter.id === "fox" ? "none" : "block";
+    alternate.firstChild.textContent = critter.emoji;
+    el("evolutionCritterAccessory").textContent = accessory === "none" ? "" : accessory;
+    alternate.style.filter = colorFilters[color] || "none";
+    alternate.style.transform = "scale(" + (1.02 - stageIndex * .01) + ")";
     svg.style.filter = "drop-shadow(0 8px 12px #0005) " + (colorFilters[color] || "none");
     el("companionPreview").style.filter = colorFilters[color] || "none";
   }
@@ -513,7 +527,8 @@
     const fox = el("evolutionFox");
     fox.setAttribute("class", "evolution-fox stage-" + (stageIndex + 1));
     el("foxStageName").textContent = "Stage " + (stageIndex + 1) + " — " + stage.name;
-    el("foxStageMessage").textContent = stage.message;
+    const selectedPet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+    el("foxStageMessage").textContent = stage.message.replace(/your fox/gi, "your " + selectedPet.name.toLowerCase()).replace(/fox\s/gi, selectedPet.name.toLowerCase() + " ");
     el("foxLowestWeight").textContent = lowest.toFixed(1).replace(/\.0$/, "") + " lb";
     el("foxBody").setAttribute("rx", stage.bodyRx);
     el("foxBody").setAttribute("ry", stage.bodyRy);
@@ -527,18 +542,21 @@
     if (!next) {
       el("foxNextMilestone").textContent = "Goal reached!";
       progress.style.width = "100%";
-      el("foxProgressText").textContent = "All 10 forms unlocked. Your fox is celebrating with you! Remember, your wellbeing matters at every weight.";
+      const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+      el("foxProgressText").textContent = "All 10 forms unlocked. Your " + pet.name.toLowerCase() + " is celebrating with you! Your wellbeing matters at every weight.";
     } else {
       el("foxNextMilestone").textContent = next.weight + " lb";
       const start = stage.weight, end = next.weight;
       const portion = Math.max(0, Math.min(1, (start - lowest) / (start - end)));
       progress.style.width = (portion * 100) + "%";
-      el("foxProgressText").textContent = "Next: " + next.name + " at " + next.weight + " lb. This is a milestone, not a deadline.";
+      const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+      el("foxProgressText").textContent = "Next: " + next.name + " at " + next.weight + " lb. Your " + pet.name.toLowerCase() + " is with you for the journey; this is a milestone, not a deadline.";
     }
     const list = el("foxStageList"); list.replaceChildren();
     foxStages.forEach((item, index) => {
       const chip = addText(list, "div", "", "stage-chip" + (index === stageIndex ? " active" : "") + (index < stageIndex ? " unlocked" : ""));
-      addText(chip, "strong", (index < stageIndex ? "✓ " : index === stageIndex ? "🦊 " : "🔒 ") + (index + 1) + ". " + item.name);
+      const selectedCritter = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+      addText(chip, "strong", (index < stageIndex ? "✓ " : index === stageIndex ? selectedCritter.emoji + " " : "🔒 ") + (index + 1) + ". " + item.name);
       addText(chip, "div", item.weight + " lb");
     });
     renderCustomizer();
@@ -635,7 +653,8 @@
   }
   function showPunkQuote(item) {
     el("punkQuote").textContent = item.quote;
-    el("punkContext").textContent = item.context;
+    const selectedPet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+    el("punkContext").textContent = item.context.replace(/the fox/gi, "your " + selectedPet.name.toLowerCase()).replace(/a fox/gi, "a " + selectedPet.name.toLowerCase());
   }
   async function sendPunkNotification(askPermission) {
     if (!("Notification" in window)) {
@@ -653,11 +672,16 @@
     try {
       if ("serviceWorker" in navigator) {
         const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification("Punk Fox says… 🦊⚡", { body: item.quote, icon: "./foxglove.svg", tag: "foxglove-punk-fox", renotify: false });
+        const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+        const petName = (data.companionName || "Your companion").trim();
+        await registration.showNotification(petName + " the " + pet.name + " says… " + pet.emoji + "⚡", { body: item.quote, icon: "./foxglove.svg", tag: "foxglove-companion", renotify: false });
       } else {
-        new Notification("Punk Fox says… 🦊⚡", { body: item.quote, icon: "./foxglove.svg" });
+        const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+        const petName = (data.companionName || "Your companion").trim();
+        new Notification(petName + " the " + pet.name + " says… " + pet.emoji + "⚡", { body: item.quote, icon: "./foxglove.svg" });
       }
-      el("notificationStatus").textContent = "Fox notification sent. Go cause some manageable chaos. ⚡";
+      const pet = critters.find(entry => entry.id === (data.companionCritter || "fox")) || critters[0];
+      el("notificationStatus").textContent = pet.name + " notification sent. Go cause some manageable chaos. ⚡";
       return true;
     } catch (e) {
       el("notificationStatus").textContent = "Chrome blocked that notification. Check site notification permissions; the pep-talk button still works.";

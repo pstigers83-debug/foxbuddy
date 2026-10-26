@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "Foxglove - Forest Habit Buddy",
+  "short_name": "Foxglove",
+  "description": "A gentle forest companion for daily habits and healthy routines.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101c1b",
+  "theme_color": "#18271d",
+  "icons": [
+    {
+      "src": "./foxglove.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

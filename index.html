@@ -190,6 +190,8 @@
       <select id="mealType"><option>Meal</option><option>Snack</option><option>Drink</option><option>Treat</option></select>
       <label class="field-label" for="mealText">What did you have?</label>
       <input id="mealText" maxlength="250" placeholder="e.g. tuna sandwich and fruit" required>
+      <label class="field-label" for="mealCalories">Calories (optional)</label>
+      <input id="mealCalories" type="number" min="0" max="10000" step="1" placeholder="e.g. 180">
       <label class="field-label" for="mealFeeling">Anything you noticed? (optional)</label>
       <select id="mealFeeling">
         <option value="">Skip this</option><option>Comfortably satisfied</option><option>Still hungry</option>
@@ -197,6 +199,18 @@
       </select>
       <button type="submit">Save food journal entry</button>
     </form>
+    <div class="entry" aria-live="polite">
+      <h3 style="margin-top:0">🍓 Today's calorie overview</h3>
+      <div class="stats">
+        <div class="stat"><strong id="caloriesEaten">0</strong>Calories logged</div>
+        <div class="stat"><strong id="caloriesTargetDisplay">1,750</strong>Daily guide</div>
+        <div class="stat"><strong id="caloriesRemaining">1,750</strong>Remaining (estimate)</div>
+      </div>
+      <label class="field-label" for="calorieTarget">Your daily calorie target</label>
+      <input id="calorieTarget" type="number" min="1200" max="5000" step="50" value="1750">
+      <button type="button" id="saveCalorieTarget" class="secondary">Save calorie target</button>
+      <p id="calorieMessage" class="notice">Calories are estimates, not a grade. You can change your target whenever you need.</p>
+    </div>
     <h3>Today's entries</h3><div id="mealList"></div>
   </section>
 
@@ -229,6 +243,9 @@
       <select id="weightUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select>
       <button type="submit">Save weight entry</button>
     </form>
+    <h3>Weight trend</h3>
+    <p class="muted">Your logged weights over time, converted to pounds for a consistent graph. Normal day-to-day changes are expected.</p>
+    <div id="weightChart" role="img" aria-label="Graph of your logged weight entries"></div>
     <h3>Recent entries</h3><div id="weightList"></div>
   </section>
 
@@ -325,10 +342,18 @@
   function renderMeals() {
     const list = el("mealList"); list.replaceChildren();
     const meals = getDay().meals;
+    const totalCalories = meals.reduce((sum, meal) => sum + (Number.isFinite(Number(meal.calories)) && meal.calories !== "" && meal.calories != null ? Number(meal.calories) : 0), 0);
+    const target = Number(data.calorieTarget) || 1750;
+    el("caloriesEaten").textContent = Math.round(totalCalories).toLocaleString();
+    el("caloriesTargetDisplay").textContent = Math.round(target).toLocaleString();
+    el("caloriesRemaining").textContent = Math.round(target - totalCalories).toLocaleString();
+    el("calorieTarget").value = target;
+    el("caloriesRemaining").style.color = totalCalories > target ? "var(--gold)" : "var(--green)";
     if (!meals.length) { addText(list, "p", "No entries yet. Add one whenever you'd like.", "muted"); return; }
     meals.slice().reverse().forEach(meal => {
       const card = addText(list, "div", "", "entry");
       addText(card, "strong", meal.type + ": " + meal.text);
+      if (meal.calories !== undefined && meal.calories !== null && meal.calories !== "") addText(card, "p", Math.round(Number(meal.calories)).toLocaleString() + " calories");
       if (meal.feeling) addText(card, "p", meal.feeling);
       const remove = addText(card, "button", "Delete entry", "secondary"); remove.type = "button";
       remove.addEventListener("click", () => {
@@ -422,7 +447,36 @@
       addText(chip, "div", item.weight + " lb");
     });
   }
+  function renderWeightChart() {
+    const root = el("weightChart"); root.replaceChildren();
+    const entries = data.weights.map(entry => ({ date: entry.date, value: weightInPounds(entry) }))
+      .filter(entry => Number.isFinite(entry.value) && entry.value > 0)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (!entries.length) { addText(root, "p", "Your graph will appear after you save a weight entry.", "muted"); return; }
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 640 280"); svg.setAttribute("width", "100%"); svg.setAttribute("height", "auto");
+    svg.setAttribute("role", "img"); svg.setAttribute("aria-label", "Weight trend graph in pounds");
+    const addSvg = (tag, attrs, text) => { const node = document.createElementNS(NS, tag); Object.entries(attrs || {}).forEach(([k,v]) => node.setAttribute(k,v)); if (text !== undefined) node.textContent = text; svg.appendChild(node); return node; };
+    const values = entries.map(e => e.value);
+    const min = Math.floor(Math.min(...values) - 2), max = Math.ceil(Math.max(...values) + 2);
+    const low = min === max ? min - 1 : min, high = min === max ? max + 1 : max;
+    const left = 62, right = 612, top = 22, bottom = 220;
+    const x = i => entries.length === 1 ? (left + right) / 2 : left + i * (right - left) / (entries.length - 1);
+    const y = value => bottom - ((value - low) / (high - low)) * (bottom - top);
+    for (let i = 0; i < 5; i++) { const v = low + (high-low) * i / 4, yy = y(v); addSvg("line", {x1:left,y1:yy,x2:right,y2:yy,stroke:"#40564a","stroke-width":"1"}); addSvg("text", {x:52,y:yy+4,"text-anchor":"end",fill:"#bdcbb8","font-size":"12"}, v.toFixed(0)); }
+    const path = entries.map((e,i) => (i ? "L" : "M") + x(i) + " " + y(e.value)).join(" ");
+    if (entries.length > 1) addSvg("path", {d:path,fill:"none",stroke:"#b5c99a","stroke-width":"3","stroke-linecap":"round","stroke-linejoin":"round"});
+    entries.forEach((e,i) => { addSvg("circle", {cx:x(i),cy:y(e.value),r:"5",fill:"#d6b987",stroke:"#101c1b","stroke-width":"2"}); });
+    const labelIndices = [...new Set([0, Math.floor((entries.length-1)/2), entries.length-1])];
+    labelIndices.forEach(i => { const date = entries[i].date.slice(5); addSvg("text", {x:x(i),y:244,"text-anchor": entries.length > 1 && i === 0 ? "start" : i === entries.length-1 ? "end" : "middle",fill:"#bdcbb8","font-size":"12"}, date); });
+    addSvg("text", {x:320,y:270,"text-anchor":"middle",fill:"#eee8d5","font-size":"13"}, entries.length + " logged entr" + (entries.length === 1 ? "y" : "ies") + " · pounds");
+    root.appendChild(svg);
+    const latest = entries[entries.length-1];
+    addText(root, "p", "Most recent: " + latest.value.toFixed(1).replace(/\.0$/, "") + " lb on " + latest.date + ". The line shows entries you logged, not a prediction.", "notice");
+  }
   function renderWeights() {
+    renderWeightChart();
     const root = el("weightList"); root.replaceChildren();
     const entries = data.weights.slice().sort((a, b) => b.date.localeCompare(a.date));
     if (!entries.length) { addText(root, "p", "No weight entries. That's completely okay.", "muted"); return; }
@@ -483,8 +537,21 @@
   });
   el("mealForm").addEventListener("submit", event => {
     event.preventDefault(); const text = el("mealText").value.trim(); if (!text) return;
-    getDay().meals.push({ id: Date.now().toString() + Math.random().toString(16).slice(2), type: el("mealType").value, text, feeling: el("mealFeeling").value });
-    saveData(); el("mealText").value = ""; el("mealFeeling").value = ""; renderMeals(); renderHistory();
+    const caloriesText = el("mealCalories").value.trim();
+    const calories = caloriesText === "" ? null : Number(caloriesText);
+    if (calories !== null && (!Number.isFinite(calories) || calories < 0 || calories > 10000)) { el("calorieMessage").textContent = "Please enter a calorie amount between 0 and 10,000, or leave it blank."; return; }
+    getDay().meals.push({ id: Date.now().toString() + Math.random().toString(16).slice(2), type: el("mealType").value, text, calories, feeling: el("mealFeeling").value });
+    saveData(); el("mealText").value = ""; el("mealCalories").value = ""; el("mealFeeling").value = ""; renderMeals(); renderHistory();
+  });
+  el("saveCalorieTarget").addEventListener("click", () => {
+    const target = Number(el("calorieTarget").value);
+    if (!Number.isFinite(target) || target < 1200 || target > 5000) {
+      el("calorieMessage").textContent = "Please choose a daily target between 1,200 and 5,000, or ask a healthcare professional for a personalized target.";
+      return;
+    }
+    data.calorieTarget = Math.round(target);
+    saveData(); renderMeals();
+    el("calorieMessage").textContent = "Daily calorie guide saved. This is a flexible estimate, not a limit you have to hit perfectly.";
   });
   el("saveCheckin").addEventListener("click", () => {
     const day = getDay(); day.mood = el("mood").value; day.hunger = el("hunger").value; day.reflection = el("reflection").value.trim(); day.checkinSaved = true;

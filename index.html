@@ -24,6 +24,18 @@
     .subtitle, .muted { color: var(--muted); }
     .fox { font-size: 76px; line-height: 1.4; filter: drop-shadow(0 0 14px #9b704044); }
     .evolution-fox-wrap { display: flex; justify-content: center; padding: 8px 0 0; }
+    .companion-customizer { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .companion-preview { min-height: 150px; display:flex; justify-content:center; align-items:center; position:relative; margin: 8px auto 14px; width: 190px; border-radius: 50%; background: radial-gradient(circle, #78916a33, transparent 70%); }
+    .companion-avatar { font-size: 100px; line-height: 1.2; display:none; animation: fox-breathe 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 8px #0005); }
+    .companion-accessory { position:absolute; top: 4px; right: 28px; font-size: 35px; filter: drop-shadow(0 3px 3px #0008); }
+    .critter-grid { display:grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap:7px; margin:8px 0 14px; }
+    .critter-choice { background:var(--panel2); color:var(--cream); border:1px solid var(--border); padding:8px 3px; border-radius:12px; min-width:0; }
+    .critter-choice .critter-emoji { display:block; font-size:27px; line-height:1.3; }
+    .critter-choice .critter-name { display:block; font-size:.72rem; font-weight:normal; overflow-wrap:anywhere; }
+    .critter-choice.selected { border:2px solid var(--gold); background:#d6b98720; }
+    .customizer-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .customizer-grid label { display:block; font-size:.92rem; }
+    @media(max-width:430px) { .critter-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } .customizer-grid { grid-template-columns:1fr; } }
     .evolution-fox { width: min(100%, 330px); height: auto; overflow: visible; filter: drop-shadow(0 8px 12px #0005); animation: fox-breathe 3.2s ease-in-out infinite; }
     .fox-tail { transform-box: fill-box; transform-origin: 18% 82%; animation: tail-swish 2.4s ease-in-out infinite; }
     .fox-ear { transform-box: fill-box; transform-origin: center bottom; animation: ear-twitch 5s ease-in-out infinite; }
@@ -54,6 +66,9 @@
     .stage-chip.unlocked { color: var(--green); }
     @media (prefers-reduced-motion: reduce) { .evolution-fox, .fox-tail, .fox-ear, .fox-aura { animation: none !important; transition: none !important; } }
     .card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 20px; margin: 16px 0; }
+    .punk-card { border-color: #8c6747; background: linear-gradient(135deg, #1b2b27, #2b2925); }
+    .punk-quote { font-size: 1.15rem; font-weight: bold; color: var(--gold); min-height: 3.4em; }
+    .punk-stamp { display: inline-block; border: 1px solid var(--gold); color: var(--gold); border-radius: 6px; padding: 2px 8px; font-size: .75rem; letter-spacing: .08em; transform: rotate(-2deg); }
     .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
     .stat { background: var(--panel2); border-radius: 12px; padding: 13px 6px; text-align: center; overflow-wrap: anywhere; }
     .stat strong { display: block; color: var(--gold); font-size: 1.35rem; }
@@ -108,6 +123,21 @@
     <div class="progress-track"><div id="levelProgress" style="height:100%;width:0%;background:var(--gold)"></div></div>
   </section>
 
+  <section class="card punk-card" id="punkFoxCard">
+    <div class="row" style="align-items:center">
+      <div style="flex:0 0 auto;font-size:2.8rem" aria-hidden="true">🦊⚡</div>
+      <div><span class="punk-stamp">PUNK FOX PROTOCOL</span><h2 style="margin:5px 0">Your tiny chaos coach</h2></div>
+    </div>
+    <p id="punkQuote" class="punk-quote" aria-live="polite">The scale is data, not your damn boss.</p>
+    <p id="punkContext" class="muted">One step at a time. No shame. No surrender.</p>
+    <div class="row">
+      <button type="button" id="newPunkQuote">Give me another pep talk</button>
+      <button type="button" id="sendPunkNotification" class="secondary">Send a fox notification</button>
+    </div>
+    <label class="quest" style="border:0;padding-left:0"><input id="dailyPunkNotification" type="checkbox"><span>Show me one punk-fox notification per day when I open Foxglove (requires notification permission).</span></label>
+    <p id="notificationStatus" class="notice" aria-live="polite">Notifications are optional. You can still get pep talks right here.</p>
+  </section>
+
   <section class="card" id="evolutionCard">
     <h2>🦊 Your evolving forest companion</h2>
     <p class="muted">Your fox changes when your weight entries reach new milestones. It never evolves backward, and there's no deadline.</p>
@@ -150,6 +180,24 @@
     <p id="foxProgressText" class="notice" style="text-align:center">Your first evolution is waiting whenever you're ready.</p>
     <h3>Evolution trail</h3>
     <div id="foxStageList" class="stage-list"></div>
+    <div class="companion-customizer">
+      <h3>🎨 Make your companion yours</h3>
+      <p class="muted">Pick your critter, give them a name, and dress them up. Your choices are saved on this device.</p>
+      <div class="companion-preview" id="companionPreview">
+        <div id="companionAvatar" class="companion-avatar" aria-label="Selected companion">🦊</div>
+        <div id="companionAccessoryPreview" class="companion-accessory" aria-hidden="true">🖤</div>
+      </div>
+      <p id="companionGreeting" style="text-align:center;font-weight:bold;color:var(--gold)">Meet your companion!</p>
+      <label class="field-label" for="companionName">Companion's name</label>
+      <input id="companionName" maxlength="24" placeholder="e.g. Hex, Moss, Chaos">
+      <p class="field-label">Choose your critter</p>
+      <div id="critterGrid" class="critter-grid" aria-label="Choose a critter"></div>
+      <div class="customizer-grid">
+        <div><label for="companionAccessory">Accessory</label><select id="companionAccessory"><option value="none">No accessory</option><option value="🖤">Punk heart 🖤</option><option value="🎀">Bow 🎀</option><option value="🌿">Leaf crown 🌿</option><option value="🌸">Flower crown 🌸</option><option value="🕶️">Cool shades 🕶️</option><option value="⭐">Star ⭐</option><option value="🦇">Bat buddy 🦇</option><option value="👑">Tiny crown 👑</option><option value="🎧">Headphones 🎧</option><option value="🧣">Scarf 🧣</option></select></div>
+        <div><label for="companionColor">Color vibe</label><select id="companionColor"><option value="none">Natural colors</option><option value="purple">Mystic purple</option><option value="pink">Bubblegum pink</option><option value="blue">Moonlit blue</option><option value="green">Forest green</option><option value="gold">Golden glow</option><option value="mono">Black & white punk</option></select></div>
+      </div>
+      <p class="notice">Critters: fox, cat, wolf, raccoon, bunny, bear, deer, owl, frog, axolotl, hedgehog, dragon, bat, crow, capybara, otter, possum, moth, turtle, and red panda.</p>
+    </div>
   </section>
 
   <section class="card">
@@ -412,6 +460,53 @@
     if (stageIndex > savedStage) { data.foxEvolutionStage = stageIndex; saveData(); }
     return { stageIndex, lowest };
   }
+  const critters = [
+    { id: "fox", name: "Fox", emoji: "🦊" }, { id: "cat", name: "Cat", emoji: "🐈" },
+    { id: "wolf", name: "Wolf", emoji: "🐺" }, { id: "raccoon", name: "Raccoon", emoji: "🦝" },
+    { id: "bunny", name: "Bunny", emoji: "🐰" }, { id: "bear", name: "Bear", emoji: "🐻" },
+    { id: "deer", name: "Deer", emoji: "🦌" }, { id: "owl", name: "Owl", emoji: "🦉" },
+    { id: "frog", name: "Frog", emoji: "🐸" }, { id: "axolotl", name: "Axolotl", emoji: "🦎" },
+    { id: "hedgehog", name: "Hedgehog", emoji: "🦔" }, { id: "dragon", name: "Dragon", emoji: "🐉" },
+    { id: "bat", name: "Bat", emoji: "🦇" }, { id: "crow", name: "Crow", emoji: "🐦‍⬛" },
+    { id: "capybara", name: "Capybara", emoji: "🦫" }, { id: "otter", name: "Otter", emoji: "🦦" },
+    { id: "possum", name: "Possum", emoji: "🐀" }, { id: "moth", name: "Moth", emoji: "🦋" },
+    { id: "turtle", name: "Turtle", emoji: "🐢" }, { id: "redpanda", name: "Red panda", emoji: "🐼" }
+  ];
+  const colorFilters = { none: "none", purple: "hue-rotate(55deg) saturate(1.2)", pink: "hue-rotate(300deg) saturate(1.35)", blue: "hue-rotate(165deg) saturate(1.2)", green: "hue-rotate(75deg) saturate(1.15)", gold: "sepia(.5) saturate(1.5)", mono: "grayscale(1) contrast(1.15)" };
+  function renderCustomizer() {
+    const chosen = data.companionCritter || "fox";
+    const critter = critters.find(item => item.id === chosen) || critters[0];
+    const name = (data.companionName || "").trim() || "Your companion";
+    const accessory = data.companionAccessory || "🖤";
+    const color = data.companionColor || "none";
+    const grid = el("critterGrid"); grid.replaceChildren();
+    critters.forEach(item => {
+      const button = document.createElement("button"); button.type = "button";
+      button.className = "critter-choice" + (item.id === critter.id ? " selected" : "");
+      button.setAttribute("aria-pressed", item.id === critter.id ? "true" : "false");
+      const emoji = addText(button, "span", item.emoji, "critter-emoji");
+      addText(button, "span", item.name, "critter-name");
+      button.addEventListener("click", () => { data.companionCritter = item.id; saveData(); renderCustomizer(); });
+      grid.appendChild(button);
+    });
+    el("companionName").value = data.companionName || "";
+    el("companionAccessory").value = accessory;
+    el("companionColor").value = color;
+    el("companionAvatar").textContent = critter.emoji;
+    el("companionAvatar").style.display = "block";
+    el("companionAvatar").style.filter = colorFilters[color] || "none";
+    el("companionAvatar").style.transform = "scale(" + (1 + (currentFoxStage().stageIndex * .012)) + ")";
+    el("companionAccessoryPreview").textContent = accessory === "none" ? "" : accessory;
+    el("companionGreeting").textContent = name + " the " + critter.name + " is ready to cause some wholesome chaos.";
+    const svg = el("evolutionFox");
+    svg.style.display = critter.id === "fox" ? "block" : "none";
+    svg.style.filter = "drop-shadow(0 8px 12px #0005) " + (colorFilters[color] || "none");
+    el("companionPreview").style.filter = colorFilters[color] || "none";
+  }
+  el("companionName").addEventListener("input", () => { data.companionName = el("companionName").value.slice(0,24); saveData(); const critter = critters.find(item => item.id === (data.companionCritter || "fox")) || critters[0]; el("companionGreeting").textContent = (data.companionName.trim() || "Your companion") + " the " + critter.name + " is ready to cause some wholesome chaos."; });
+  el("companionAccessory").addEventListener("change", () => { data.companionAccessory = el("companionAccessory").value; saveData(); renderCustomizer(); });
+  el("companionColor").addEventListener("change", () => { data.companionColor = el("companionColor").value; saveData(); renderCustomizer(); });
+
   function renderFoxEvolution() {
     const { stageIndex, lowest } = currentFoxStage();
     const stage = foxStages[stageIndex];
@@ -446,6 +541,7 @@
       addText(chip, "strong", (index < stageIndex ? "✓ " : index === stageIndex ? "🦊 " : "🔒 ") + (index + 1) + ". " + item.name);
       addText(chip, "div", item.weight + " lb");
     });
+    renderCustomizer();
   }
   function renderWeightChart() {
     const root = el("weightChart"); root.replaceChildren();
@@ -517,6 +613,66 @@
       back.addEventListener("click", () => { dateKey = todayKey(); renderAll(); });
     }
   }
+  const punkQuotes = [
+    { quote: "The scale is data, not your damn boss.", context: "A number can inform you. It does not get to define you." },
+    { quote: "You are building a life, not serving a sentence.", context: "Food is allowed to be enjoyable. Rest is allowed. You are allowed to be human." },
+    { quote: "Tiny steps still kick ass.", context: "You do not need a perfect day. Pick one doable thing and start there." },
+    { quote: "A rough day is a plot twist, not the ending.", context: "No punishment, no starting over. Just come back when you're ready." },
+    { quote: "Eat the snack. Enjoy the snack. Carry on, legend.", context: "You never have to earn food, and one snack cannot ruin your progress." },
+    { quote: "Consistency beats dramatic nonsense.", context: "Boring little habits build real change. Keep it sustainable." },
+    { quote: "Your worth is not up for a weigh-in.", context: "The fox is proud of you at every weight, full stop." },
+    { quote: "Hydrate, take a breath, and square up to the day.", context: "You can do hard things without being cruel to yourself." },
+    { quote: "Rest is part of the plan, you magnificent menace.", context: "Recovery counts too. You are not a machine." },
+    { quote: "You don't need motivation. You need one next step.", context: "Make it small enough to do right now." },
+    { quote: "Progress is not a straight line. Neither is a fox's tail.", context: "Weight fluctuates. Keep your focus on caring for yourself over time." },
+    { quote: "No shame. No punishment. Just the next damn step.", context: "You can adjust your plan without turning on yourself." }
+  ];
+  const PUNK_PREF_KEY = "foxglove_punkfox_daily_notification";
+  const PUNK_LAST_KEY = "foxglove_punkfox_last_notification";
+  function getPunkQuote() {
+    const index = Math.floor(Math.random() * punkQuotes.length);
+    return punkQuotes[index];
+  }
+  function showPunkQuote(item) {
+    el("punkQuote").textContent = item.quote;
+    el("punkContext").textContent = item.context;
+  }
+  async function sendPunkNotification(askPermission) {
+    if (!("Notification" in window)) {
+      el("notificationStatus").textContent = "This browser does not support notifications here, but your pep talks still work in Foxglove.";
+      return false;
+    }
+    if (Notification.permission === "default" && askPermission) {
+      try { await Notification.requestPermission(); } catch (e) {}
+    }
+    if (Notification.permission !== "granted") {
+      el("notificationStatus").textContent = "Notifications are not enabled. Allow them in Chrome's site settings if you want them; the in-app messages will still work.";
+      return false;
+    }
+    const item = getPunkQuote();
+    try {
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification("Punk Fox says… 🦊⚡", { body: item.quote, icon: "./foxglove.svg", tag: "foxglove-punk-fox", renotify: false });
+      } else {
+        new Notification("Punk Fox says… 🦊⚡", { body: item.quote, icon: "./foxglove.svg" });
+      }
+      el("notificationStatus").textContent = "Fox notification sent. Go cause some manageable chaos. ⚡";
+      return true;
+    } catch (e) {
+      el("notificationStatus").textContent = "Chrome blocked that notification. Check site notification permissions; the pep-talk button still works.";
+      return false;
+    }
+  }
+  function checkDailyPunkNotification() {
+    const enabled = localStorage.getItem(PUNK_PREF_KEY) === "true";
+    el("dailyPunkNotification").checked = enabled;
+    if (!enabled || !("Notification" in window) || Notification.permission !== "granted") return;
+    const today = todayKey();
+    if (localStorage.getItem(PUNK_LAST_KEY) === today) return;
+    // Browser notifications only run when the app is opened; this does not schedule alerts while it is closed.
+    sendPunkNotification(false).then(sent => { if (sent) localStorage.setItem(PUNK_LAST_KEY, today); });
+  }
   function renderAll() { renderHeader(); renderQuests(); renderMeals(); renderCheckin(); renderRewards(); renderWeights(); renderFoxEvolution(); renderHistory(); }
   for (let i = 0; i < habitCount; i++) {
     el("q" + i).addEventListener("change", () => {
@@ -574,7 +730,25 @@
     data = { days: {}, weights: [], foxEvolutionStage: 0 }; dateKey = todayKey(); saveData();
     el("dataMessage").textContent = "Your Foxglove data has been cleared."; renderAll();
   });
+  el("newPunkQuote").addEventListener("click", () => showPunkQuote(getPunkQuote()));
+  el("sendPunkNotification").addEventListener("click", () => { sendPunkNotification(true); });
+  el("dailyPunkNotification").addEventListener("change", () => {
+    const enabled = el("dailyPunkNotification").checked;
+    localStorage.setItem(PUNK_PREF_KEY, enabled ? "true" : "false");
+    if (!enabled) {
+      el("notificationStatus").textContent = "Daily notifications turned off. Your in-app punk fox is still here.";
+    } else if (!("Notification" in window)) {
+      el("notificationStatus").textContent = "This browser does not support notifications here. In-app pep talks are still available.";
+    } else if (Notification.permission === "granted") {
+      el("notificationStatus").textContent = "Daily pep talk enabled. You'll get one when you open Foxglove each day.";
+      checkDailyPunkNotification();
+    } else {
+      el("notificationStatus").textContent = "Tap 'Send a fox notification' once to ask Chrome for permission, then turn this on again.";
+    }
+  });
+  showPunkQuote(punkQuotes[new Date().getDate() % punkQuotes.length]);
   renderAll();
+  checkDailyPunkNotification();
 })();
 </script>
 <script>
